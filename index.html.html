@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+<script defer src="/_vercel/insights/script.js"></script>
+<title>Stablecoin KYT Console</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: control bar, tabbed workspace; summary before detail. */
+:root{--bg:#f4f6f6;--panel:#ffffff;--fg:#17242a;--muted:#5b6b72;--line:#d8e0e2;--accent:#1d6b74;--accent-soft:#dcecee;--ok:#2f7d4f;--warn:#a86a12;--bad:#b23b3b;--ok-bg:#e3f2e8;--warn-bg:#f8eedc;--bad-bg:#f7e2e2;--bar2:#9fc4c9;
+--sans:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1719;--panel:#162124;--fg:#e3ecee;--muted:#93a6ac;--line:#2a3a3e;--accent:#5fb3bc;--accent-soft:#1d3539;--ok:#6cc392;--warn:#e0a54a;--bad:#ec7f7f;--ok-bg:#183326;--warn-bg:#3a2d16;--bad-bg:#3d1f1f;--bar2:#2f6970;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1719;--panel:#162124;--fg:#e3ecee;--muted:#93a6ac;--line:#2a3a3e;--accent:#5fb3bc;--accent-soft:#1d3539;--ok:#6cc392;--warn:#e0a54a;--bad:#ec7f7f;--ok-bg:#183326;--warn-bg:#3a2d16;--bad-bg:#3d1f1f;--bar2:#2f6970;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.5}
+.wrap{max-width:1120px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:16px}
+h1{font-size:22px;font-weight:600;margin:0;text-wrap:balance}h2{font-size:16px;font-weight:600;margin:0 0 4px}h3{font-size:13px;margin:0;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:500}
+p{margin:0}.muted{color:var(--muted)}.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.note{font-size:12px;color:var(--muted)}
+.head{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between}
+.sim{font-size:12px;border:1px solid var(--line);padding:2px 8px;border-radius:99px;color:var(--muted)}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{font:inherit;font-size:13px;border:0;background:transparent;color:var(--fg);padding:6px 10px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}.seg button[aria-pressed="true"]{background:var(--accent);color:var(--panel)}
+button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+select{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg)}
+.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line)}
+.tabs button{font:inherit;font-size:13px;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);padding:8px 10px;cursor:pointer;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent);font-weight:500}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:grid;gap:10px;min-width:0}
+.kv{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:13px}.kv span:nth-child(even){font-family:var(--mono);text-align:right}
+.chip{display:inline-block;font-size:12px;padding:1px 8px;border-radius:99px;font-weight:500}
+.ok{background:var(--ok-bg);color:var(--ok)}.warn{background:var(--warn-bg);color:var(--warn)}.bad{background:var(--bad-bg);color:var(--bad)}.neu{background:var(--accent-soft);color:var(--accent)}
+.meter{height:8px;border-radius:4px;background:var(--accent-soft);position:relative;overflow:hidden}.meter i{position:absolute;inset:0 auto 0 0;border-radius:4px}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:500;color:var(--muted);font-size:12px;white-space:nowrap}td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+pre{font-family:var(--mono);font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px;overflow-x:auto;margin:0;line-height:1.55}
+.hb{display:grid;grid-template-columns:130px 1fr 70px;gap:8px;align-items:center;font-size:13px}.hb .t{height:14px;display:flex;border-radius:3px;overflow:hidden;background:var(--accent-soft)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted)}.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+ol.steps{margin:0;padding-left:20px;display:grid;gap:6px}
+.lead{font-size:15px;max-width:70ch}
+@media (max-width:520px){.hb{grid-template-columns:96px 1fr 56px}}
+@media (prefers-reduced-motion:no-preference){.meter i{transition:width .3s}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="head">
+    <div><h1>Stablecoin KYT Console</h1><p class="muted">Three bank customers monitoring USDC and PYUSD flows on Solana, each with risk appetite settings you can switch.</p></div>
+    <span class="sim">Simulated data · fictional banks · built by Erin Gaither</span>
+  </div>
+
+  <div class="bar">
+    <label class="note" for="bank">Bank</label>
+    <select id="bank"></select>
+    <span class="note">Risk appetite</span>
+    <div class="seg" id="apSeg" role="group" aria-label="Risk appetite"></div>
+    <span class="note" id="apNote"></span>
+  </div>
+
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <section id="view"></section>
+</div>
+
+<script>
+const AP=["Conservative","Balanced","Expansive"];
+const BANKS=[
+ {id:"harlan",name:"Harlan Ridge Bank",type:"Community bank, new to crypto",jur:"US",reg:"FinCEN · OFAC",def:0,mult:0.4,analysts:1,vol:15.2},
+ {id:"cedar",name:"Cedar Coast Bank",type:"Regional bank, USDC payments",jur:"US",reg:"FinCEN · OFAC",def:0,mult:1.0,analysts:2,vol:38.0},
+ {id:"meridian",name:"Meridian Hollow Trust",type:"Fintech partner bank, Toronto",jur:"CA",reg:"FINTRAC · Canadian sanctions + OFAC screening",def:0,mult:2.2,analysts:3,vol:83.6}];
+const JUR={US:{tr:"$3,000",big:"$10,000 CTR",cur:"USD"},CA:{tr:"CAD 1,000",big:"CAD 10,000 LVCTR",cur:"CAD"}};
+// tiers: [alerts, confirmed findings] per month at 1x volume. Conservative alerts on tiers 1-3, Balanced 1-2, Expansive 1.
+const RULES=[
+ {id:"ofac_d",name:"OFAC address, direct",min:15,fixed:true,tiers:[[2,2]],t:()=>["Block","Block","Block"]},
+ {id:"ofac_i",name:"Sanctioned exposure, indirect",min:20,tiers:[[6,3],[18,2],[40,1]],t:()=>["Within 3 hops","Within 2 hops","Within 1 hop"]},
+ {id:"mixer",name:"Mixer exposure",min:25,tiers:[[10,5],[34,6],[90,3]],t:()=>["Any share, within 3 hops","5%+ of value, within 2 hops","20%+ of value, within 1 hop"]},
+ {id:"illicit",name:"Scam, darknet, stolen funds",min:22,tiers:[[8,5],[30,6],[75,2]],t:()=>["Any share, within 2 hops","10%+ of value, within 2 hops","25%+ of value, direct only"]},
+ {id:"nokyc",name:"No KYC exchange",min:10,tiers:[[5,2],[25,3],[120,2]],t:()=>["Any amount","Above $10K","Above $50K"]},
+ {id:"struct",name:"Structuring near reporting lines",min:18,tiers:[[4,2],[14,3],[45,2]],t:j=>[`3+ in 7 days just under ${JUR[j].tr} or ${JUR[j].big}`,"5+ in 7 days","8+ in 7 days"]},
+ {id:"vel",name:"Velocity spike vs. customer norm",min:8,tiers:[[12,2],[40,3],[140,2]],t:()=>["2x normal","3x normal","5x normal"]},
+ {id:"newwal",name:"New wallet, large first inflow",min:8,tiers:[[6,1],[22,2],[80,1]],t:()=>["Above $5K","Above $25K","Above $100K"]}];
+const state={bank:"harlan",tab:"overview",ap:Object.fromEntries(BANKS.map(b=>[b.id,0]))};
+const $=s=>document.querySelector(s);const fmt=n=>n.toLocaleString("en-US");
+const bank=()=>BANKS.find(b=>b.id===state.bank);
+
+function calc(b,ap){let alerts=0,hours=0,found=0,missed=0,blocks=0;const rows=RULES.map(r=>{
+  let a=0,f=0,m=0;r.tiers.forEach(([c,h],i)=>{const cc=Math.round(c*b.mult),hh=Math.min(cc,Math.round(h*b.mult));
+    const on=r.fixed||i<=2-ap;if(on){a+=cc;f+=hh}else m+=hh});
+  const hr=a*r.min/60;alerts+=a;hours+=hr;found+=f;missed+=m;if(r.fixed)blocks+=a;
+  return{r,a,f,m,hr,thr:r.t(b.jur)[ap]}});
+  const cap=b.analysts*5.5*21;return{rows,alerts,hours,found,missed,blocks,cap,pct:hours/cap*100}}
+function status(p){return p<=100?["On track","ok"]:p<=120?["Stretched","warn"]:["Over capacity","bad"]}
+
+function spark(seed){const end=EXP.reduce((s,e)=>s+e[1]+e[2],0)/(380);const pts=[];for(let i=0;i<8;i++)pts.push(end+(7-i)*.04*Math.sin(i*1.3+seed*2.1)+(7-i)*.03*(seed-1));pts[7]=end;
+  const mx=Math.max(...pts)+.2,mn=Math.min(...pts)-.2,W=120,H=28;const xy=pts.map((p,i)=>[i*(W/7),H-(p-mn)/(mx-mn)*H]);
+  return `<svg width="${W}" height="${H}" viewBox="-2 -2 ${W+4} ${H+4}" aria-label="8 week exposure trend"><polyline fill="none" stroke="var(--accent)" stroke-width="1.5" points="${xy.map(p=>p.join(",")).join(" ")}"/><circle cx="${xy[7][0]}" cy="${xy[7][1]}" r="2.5" fill="var(--accent)"/></svg><span class="note mono"> ${pts[7].toFixed(2)}% of volume</span>`}
+
+const EXPO={harlan:.8,cedar:1,meridian:1.35};
+function volbar(b){const k=b.mult*EXPO[b.id];const s=a=>a.reduce((t,e)=>t+e[1]+e[2],0)*k;
+ const g=[["Sanctioned",s(EXP.slice(0,1)),"bad"],["Mixer, scam, darknet, stolen",s(EXP.slice(1,5)),"warn"],["No KYC exchange",s(EXP.slice(5)),"bar2"]];
+ const tot=g.reduce((t,x)=>t+x[1],0),pct=tot/(b.vol*10);
+ const clean=b.vol*1000-tot;
+ return `<div style="display:grid;gap:6px"><div class="head note"><span>Monthly volume</span><span class="mono">$${b.vol.toFixed(1)}M</span></div>
+ <div style="display:flex;height:12px;border-radius:3px;overflow:hidden"><span style="width:${100-pct}%;background:var(--ok)"></span><span style="width:${pct}%;background:var(--bad)"></span></div>
+ <div style="display:grid;gap:2px;font-size:12px"><div class="head"><span><i class="sw" style="background:var(--ok)"></i>No risk exposure</span><span class="mono">$${(clean/1000).toFixed(1)}M · ${(100-pct).toFixed(1)}%</span></div><div class="head"><span><i class="sw" style="background:var(--bad)"></i>Risk exposure</span><span class="mono">$${fmt(Math.round(tot))}K · ${pct.toFixed(1)}%</span></div></div>
+ <div class="head note" style="margin-top:6px"><span>Risk exposure by type</span><span class="mono">$${fmt(Math.round(tot))}K · ${pct.toFixed(1)}%</span></div>
+ <div style="display:flex;height:12px;border-radius:3px;overflow:hidden">${g.map(x=>`<span style="width:${x[1]/tot*100}%;background:var(--${x[2]})"></span>`).join("")}</div>
+ <div style="display:grid;gap:2px;font-size:12px">${g.map(x=>`<div class="head"><span><i class="sw" style="background:var(--${x[2]})"></i>${x[0]}</span><span class="mono">$${fmt(Math.round(x[1]))}K</span></div>`).join("")}</div>
+ </div>`}
+const TABS=[["overview","Leadership summary"],["thresholds","Thresholds"],["addresses","Inflow addresses"],["queue","Alert queue"],["case","Case file"],["integration","Integration"],["notebook","Notebook"]];
+
+function vOverview(){return `<div style="display:grid;gap:12px"><p class="lead">Each bank sees the same kinds of risk on Solana stablecoins. What changes is how much it wants to alert on, and how many real cases it accepts missing. OFAC direct hits are blocked at every bank, because sanctions are strict liability.</p><div class="grid3">${BANKS.map((b,i)=>{const c=calc(b,state.ap[b.id]);const[s,k]=status(c.pct);
+ return `<div class="card"><h2>${b.name}</h2><p class="note">${b.type} · ${b.reg}</p>
+ <div class="kv"><span>Risk appetite</span><span>${AP[state.ap[b.id]]}</span><span>Alerts per month</span><span>${fmt(c.alerts)}</span><span>OFAC blocks</span><span>${c.blocks}</span><span>Real cases caught</span><span>${c.found}</span><span>Real cases missed</span><span>${c.missed}</span></div>
+
+ ${volbar(b)}</div>`}).join("")}</div><p class="note">Change a bank's appetite in the bar above and watch its card move.</p></div>`}
+
+function vThresholds(){const b=bank(),ap=state.ap[b.id],c=calc(b,ap);
+ const cmp=AP.map((n,i)=>{const x=calc(b,i);const[s,k]=status(x.pct);return `<tr><td>${n}${i===b.def?' <span class="chip neu">bank policy</span>':""}</td><td class="n">${fmt(x.alerts)}</td><td class="n">${x.found}</td><td class="n">${x.missed}</td></tr>`}).join("");
+ return `<div style="display:grid;gap:12px"><div class="card"><h2>Same data, three appetites: ${b.name}</h2><p class="note">Fewer alerts means more real cases missed. Anything touching sanctions needs testing and sign off from the bank's compliance officer.</p>
+ <div class="tw"><table><thead><tr><th>Appetite</th><th class="n">Alerts</th><th class="n">Caught</th><th class="n">Missed</th></tr></thead><tbody>${cmp}</tbody></table></div></div>
+ <div class="card"><h2>Rules at ${AP[ap]}</h2><div class="tw"><table><thead><tr><th>Signal</th><th>Alerts when</th><th class="n">Alerts</th><th class="n">Found</th><th class="n">Missed</th></tr></thead><tbody>
+ ${c.rows.map(x=>`<tr><td>${x.r.name}</td><td>${x.thr}</td><td class="n">${x.a}</td><td class="n">${x.f}</td><td class="n">${x.m}</td></tr>`).join("")}
+ </tbody></table></div><p class="note">${b.jur==="CA"?"Meridian Hollow is regulated by FINTRAC, so structuring watches the CAD 1,000 Travel Rule line and the CAD 10,000 large virtual currency transaction report.":"US banks watch the $3,000 Travel Rule line and the $10,000 CTR line for structuring."}</p></div></div>`}
+
+const EXP=[["Sanctioned",12,48],["Mixer",85,310],["Scam",60,190],["Darknet",8,70],["Stolen funds",15,55],["No KYC exchange",420,260]];
+const CP=[["Northgate Exchange","Regulated US exchange",34,"Low","Grow","ok"],["Solstice Pay","Licensed payment processor",22,"Low","Grow","ok"],["Self hosted wallets","Travel Rule data not available",15,"Varies","Watch","warn"],["Brightwater Custody","Qualified custodian",14,"Low","Grow","ok"],["Tidepool","Solana DEX",11,"Medium","Watch","warn"],["Kestrel OTC","Offshore desk, no KYC",4,"High","Restrict","bad"]];
+function vExposure(){const b=bank();const rows=EXP.map(([n,d,i])=>[n,d*b.mult,i*b.mult]);const mx=Math.max(...rows.map(r=>r[1]+r[2]));const tot=rows.reduce((s,r)=>s+r[1]+r[2],0);
+ return `<div style="display:grid;gap:12px"><div class="card"><h2>Exposure by risk category: ${b.name}</h2><p class="note">Monthly inbound value with any exposure, in $K. Direct is one hop from the source. Indirect is two or more hops, weighted down by distance. Total exposed: $${fmt(Math.round(tot))}K, ${(tot/10/b.vol).toFixed(1)}% of volume.</p>
+ <div class="legend"><span><i class="sw" style="background:var(--accent)"></i>Direct</span><span><i class="sw" style="background:var(--bar2)"></i>Indirect</span></div>
+ <div style="display:grid;gap:8px">${rows.map(([n,d,i])=>`<div class="hb"><span>${n}</span><div class="t"><span style="width:${d/mx*100}%;background:var(--accent)"></span><span style="width:${i/mx*100}%;background:var(--bar2)"></span></div><span class="mono" style="text-align:right">${fmt(Math.round(d+i))}</span></div>`).join("")}</div></div>
+ <div class="card"><h2>Where the bank can grow</h2><p class="note">Counterparties by share of stablecoin volume. Compliance work also tells the business where volume is safe to expand.</p><div class="tw"><table><thead><tr><th>Counterparty</th><th>Type</th><th class="n">Share</th><th>Risk</th><th>Recommendation</th></tr></thead><tbody>${CP.map(c=>`<tr><td>${c[0]}</td><td>${c[1]}</td><td class="n">${c[2]}%</td><td>${c[3]}</td><td><span class="chip ${c[5]}">${c[4]}</span></td></tr>`).join("")}</tbody></table></div></div></div>`}
+
+// Fictional Solana addresses: seeded random base58, generated in the page.
+const B58="123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+function rng(seed){let s=7;for(const ch of seed)s=(s*31+ch.charCodeAt(0))>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
+function addr(r){let a="";for(let i=0;i<44;i++)a+=B58[Math.floor(r()*58)];return a}
+const short=a=>a.slice(0,5)+"…"+a.slice(-5);
+const ROLES=["Omnibus deposit","Omnibus deposit","Customer deposit","Customer deposit","Customer deposit","Customer deposit","Treasury","Settlement"];
+const RISKCAT=["None","Mixer","Scam","No KYC exchange","Sanctioned (indirect)","Stolen funds"];
+function vAddresses(){const b=bank(),r=rng(b.id);let tot=0;
+ const rows=ROLES.map((role,i)=>{const a=addr(r);const inflow=Math.round((r()*.8+.2)*b.vol*1e6/(i<2?4:20));const senders=i>=6?Math.round(r()*4+2):Math.round(r()*380*b.mult+15);
+  let cat=RISKCAT[Math.floor(r()*RISKCAT.length)];if(cat.startsWith("Sanctioned"))cat="Mixer";if(i===3)cat="Sanctioned (indirect)";if(i===6)cat="None";
+  const pct=cat==="None"?0:+(r()*(cat.startsWith("Sanctioned")?1.2:4)+.1).toFixed(2);
+  const lim=[.5,1.5,3][state.ap[b.id]];const st=cat.startsWith("Sanctioned")?["Escalate","bad"]:pct===0?["Clear","ok"]:pct<=lim?["Within appetite","ok"]:["Review","warn"];
+  tot+=inflow;return{a,role,inflow,senders,cat,pct,src:cat==="None"?"":addr(r),st}});
+ return `<div class="card"><h2>Inflow addresses tracked: ${b.name}</h2><p class="note">Bank owned Solana addresses receiving USDC and PYUSD, last 30 days. ${rows.length} addresses, $${fmt(Math.round(tot/1000))}K total inflow. Addresses are randomly generated and fictional. Hover an address to see it in full.</p>
+ <div class="tw"><table><thead><tr><th>Address</th><th>Role</th><th class="n">30 day inflow</th><th class="n">Unique senders</th><th>Top exposure</th><th class="n">Exposed share</th><th>Riskiest sender</th><th>Status</th></tr></thead><tbody>
+ ${rows.map(x=>`<tr><td class="mono" title="${x.a}">${short(x.a)}</td><td>${x.role}</td><td class="n">$${fmt(x.inflow)}</td><td class="n">${x.senders}</td><td>${x.cat}</td><td class="n">${x.pct.toFixed(2)}%</td><td class="mono" title="${x.src}">${x.src?short(x.src):"–"}</td><td><span class="chip ${x.st[1]}">${x.st[0]}</span></td></tr>`).join("")}
+ </tbody></table></div><p class="note">Status uses the bank's appetite: exposed share above ${[.5,1.5,3][state.ap[b.id]]}% goes to review. Any sanctioned exposure escalates at every appetite.</p></div>`}
+
+// score = 100 x category weight x 0.6^(hops-1) x share of value. OFAC and pattern rules use hop or count limits instead.
+const CUT=[15,30,50];
+const TX=[
+ {id:"A-1041",what:"Inbound 12,400 USDC",cat:"Sanctioned (SDN)",kind:"ofacd",hops:1,share:1},
+ {id:"A-1042",what:"Inbound 18,750 USDC",cat:"Mixer",kind:"score",w:.8,hops:2,share:.31},
+ {id:"A-1043",what:"Inbound 6,200 PYUSD",cat:"Scam",kind:"score",w:.9,hops:1,share:.42},
+ {id:"A-1044",what:"Outbound 9,800 USDC",cat:"Darknet",kind:"score",w:.9,hops:3,share:.55},
+ {id:"A-1045",what:"Inbound 41,000 USDC",cat:"Mixer",kind:"score",w:.8,hops:1,share:.7},
+ {id:"A-1046",what:"Outbound 62,000 USDC",cat:"No KYC exchange",kind:"score",w:.5,hops:1,share:1},
+ {id:"A-1047",what:"Inbound 3,300 USDC",cat:"Stolen funds",kind:"score",w:.9,hops:2,share:.18},
+ {id:"A-1048",what:"Inbound 22,500 USDC",cat:"Sanctioned (SDN)",kind:"ofaci",hops:2,share:.25},
+ {id:"A-1049",what:"6 inbound transfers in 5 days",cat:"Structuring pattern",kind:"count",n:6,lim:[3,5,8]},
+ {id:"A-1050",what:"Outflows at 3.4x customer norm",cat:"Velocity",kind:"count",n:3.4,lim:[2,3,5]}];
+function evalTx(t,ap,b){if(t.kind==="ofacd")return["Block","bad","Direct SDN match","100"];
+ if(t.kind==="ofaci"){const ok=t.hops<=[3,2,1][ap];return[ok?"Alert":"Logged",ok?"warn":"neu",`Hop rule: ${t.hops} hops, limit ${[3,2,1][ap]}`,"n/a"]}
+ if(t.kind==="count"){const ok=t.n>=t.lim[ap];return[ok?"Alert":"Logged",ok?"warn":"neu",`Pattern rule: ${t.n}${t.cat==="Velocity"?"x":""} vs. ${t.lim[ap]}${t.cat==="Velocity"?"x":""}`,"n/a"]}
+ const s=Math.round(100*t.w*Math.pow(.6,t.hops-1)*t.share);const ok=s>=CUT[ap];return[ok?"Alert":"Logged",ok?"warn":"neu",`${t.hops} hop${t.hops>1?"s":""}, ${Math.round(t.share*100)}% of value`,String(s)]}
+function vQueue(){const b=bank(),ap=state.ap[b.id];const struct=b.jur==="CA"?"6 inbound transfers of CAD 950 equivalent in 5 days":"6 inbound transfers of 2,900 USDC in 5 days";
+ return `<div class="card"><h2>Alert queue: ${b.name} at ${AP[ap]}</h2><p class="note">Score = 100 × category weight × 0.6 per extra hop × share of value. This appetite alerts at a score of ${CUT[ap]} or more. Switch the appetite and the same transactions move between Alert and Logged.</p>
+ <div class="tw"><table><thead><tr><th>ID</th><th>Activity</th><th>Category</th><th>Basis</th><th class="n">Score</th><th>Action</th></tr></thead><tbody>${TX.map(t=>{const[a,k,basis,s]=evalTx(t,ap,b);return `<tr><td class="mono">${t.id}</td><td>${t.id==="A-1049"?struct:t.what}</td><td>${t.cat}</td><td>${basis}</td><td class="n">${s}</td><td><span class="chip ${k}">${a}</span>${a==="Block"?' <span class="chip bad">Freeze candidate</span>':""}</td></tr>`}).join("")}</tbody></table></div>
+ <p class="note">USDC and PYUSD issuers can freeze tokens, so a direct sanctions hit is also flagged as a freeze candidate for the issuer.</p></div>`}
+
+function vCase(){return `<div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))"><div class="card"><h2>Case A-1042 · Harlan Ridge Bank</h2><p class="note">Mixer exposure · score 15 · Conservative appetite. At Balanced or Expansive, this transfer would only be logged.</p>
+ <div class="kv"><span>Customer</span><span>Retail, 14 months</span><span>Activity</span><span>18,750 USDC inbound</span><span>Exposure</span><span>2 hops from a mixer</span><span>Traceable share</span><span>31%</span><span>Sanctioned, darknet, theft</span><span>None found</span></div>
+ <h3>Trace</h3>
+ <div style="display:grid;gap:6px;font-size:13px">
+  <div style="display:flex;flex-wrap:wrap;gap:6px"><span class="chip bad">Mixer pool · 5,810 USDC · 31%</span><span class="chip ok">Northgate Exchange (regulated) · 12,940 USDC · 69%</span></div>
+  <div class="note">↓ hop 1</div>
+  <div><span class="chip neu mono">Intermediary wallet G7kQ2…xP9vR</span> <span class="note">created 3 days before transfer</span></div>
+  <div class="note">↓ hop 2</div>
+  <div><span class="chip neu mono">Harlan Ridge deposit 9fQwT…m3LcA</span> <span class="note">18,750 USDC received</span></div>
+ </div>
+ <h3>How it was worked</h3><ol class="steps"><li>Confirm what fired and the score.</li><li>Check the customer profile: tenure, occupation, normal activity.</li><li>Trace funds before the mixer. 69% traces to a regulated exchange.</li><li>Check for sanctioned, darknet, or theft exposure. None, so no immediate escalation.</li><li>Request source of funds documentation from the customer.</li><li>Decide and document.</li></ol>
+ <p><span class="chip warn">Enhanced due diligence</span> Escalate for a SAR decision if documents aren't received in 10 days or don't fit the profile.</p></div>
+ <div class="card"><div class="head"><h2>AI drafted summary</h2><span class="chip warn">Analyst review required</span></div>
+ <p>Customer received 18,750 USDC on Solana. 31% of the value passed through a mixer two hops upstream. The remaining 69% traces to a regulated US exchange. No sanctioned, darknet, or stolen fund exposure was found. The amount is above the customer's typical monthly inflow. Recommended next step: request source of funds documentation and hold the case open for 10 days.</p>
+ <p class="note">The analyst checks every claim against the trace before saving. The draft speeds up writing. The decision stays with a person.</p></div></div>`}
+
+function vIntegration(){return `<div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))"><div class="card"><h2>How alerts reach the bank's tools</h2><ol class="steps"><li>Bank's core system sends deposit and withdrawal addresses for each customer.</li><li>Exposure data is joined to those transfers on a schedule, or in real time for withdrawals.</li><li>Rules apply the bank's appetite and score each transfer.</li><li>Blocks return to the payment system before funds settle.</li><li>Alerts post to the bank's case management queue as JSON.</li><li>Everything lands in the bank's warehouse for reporting and audit.</li></ol>
+ <p class="note">Questions for discovery: real time or batch, which case tool, who owns each step, and how long records are kept.</p></div>
+ <div class="card"><h2>Sample alert record</h2><pre>{
+  "alert_id": "HRB-2026-10-1042",
+  "bank": "harlan_ridge",
+  "chain": "solana",
+  "asset": "USDC",
+  "direction": "inbound",
+  "amount": 18750,
+  "customer_ref": "C-88213",
+  "rule": "mixer_exposure",
+  "appetite": "conservative",
+  "hops": 2,
+  "share_of_value": 0.31,
+  "score": 15,
+  "action": "alert",
+  "route": "case_mgmt.edd_queue",
+  "created_at": "2026-10-21T14:32:08Z"
+}</pre></div></div>`}
+
+function vNotebook(){return `<div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))"><div class="card"><h2>SQL: alerts and hours by rule</h2><pre>WITH scored AS (
+  SELECT t.tx_id, t.bank_id, e.category, e.hops,
+         e.share_of_value,
+         ROUND(100 * c.weight
+               * POWER(0.6, e.hops - 1)
+               * e.share_of_value) AS score
+  FROM transfers t
+  JOIN exposures e ON e.tx_id = t.tx_id
+  JOIN category_weights c ON c.category = e.category
+)
+SELECT s.bank_id, s.category,
+       COUNT(*) AS alerts,
+       SUM(r.review_min) / 60.0 AS hours,
+       SUM(CASE WHEN o.confirmed THEN 1 ELSE 0 END) AS found
+FROM scored s
+JOIN bank_policy p ON p.bank_id = s.bank_id
+JOIN review_minutes r ON r.category = s.category
+LEFT JOIN outcomes o ON o.tx_id = s.tx_id
+WHERE s.score >= p.alert_cutoff
+GROUP BY s.bank_id, s.category
+ORDER BY hours DESC;</pre></div>
+ <div class="card"><h2>pandas: compare appetites</h2><pre>import pandas as pd
+
+df = transfers.merge(exposures, on="tx_id") \\
+              .merge(weights, on="category")
+df["score"] = (100 * df.weight
+               * 0.6 ** (df.hops - 1)
+               * df.share_of_value).round()
+
+cutoffs = {"Conservative": 15,
+           "Balanced": 30,
+           "Expansive": 50}
+
+rows = []
+for name, cut in cutoffs.items():
+    hit = df[df.score >= cut]
+    rows.append({
+        "appetite": name,
+        "alerts": len(hit),
+        "found": hit.confirmed.sum(),
+        "missed": df[df.score < cut].confirmed.sum(),
+    })
+pd.DataFrame(rows)</pre></div></div>`}
+
+const VIEWS={overview:vOverview,thresholds:vThresholds,exposure:vExposure,addresses:vAddresses,queue:vQueue,case:vCase,integration:vIntegration,notebook:vNotebook};
+function render(){const b=bank(),ap=state.ap[b.id];
+ $("#bank").innerHTML=BANKS.map(x=>`<option value="${x.id}"${x.id===b.id?" selected":""}>${x.name}</option>`).join("");
+ $("#apSeg").innerHTML=AP.map((n,i)=>`<button type="button" data-ap="${i}" aria-pressed="${i===ap}">${n}</button>`).join("");
+ $("#apNote").textContent=ap===b.def?"Bank policy":`Bank policy is ${AP[b.def]}`;
+ $("#tabs").innerHTML=TABS.map(([id,n])=>`<button role="tab" data-tab="${id}" aria-selected="${id===state.tab}">${n}</button>`).join("");
+ $("#view").innerHTML=VIEWS[state.tab]();}
+$("#bank").addEventListener("change",e=>{state.bank=e.target.value;render()});
+$("#apSeg").addEventListener("click",e=>{const v=e.target.closest("button");if(!v)return;state.ap[state.bank]=+v.dataset.ap;render()});
+$("#tabs").addEventListener("click",e=>{const v=e.target.closest("button");if(!v)return;state.tab=v.dataset.tab;render()});
+render();
+</script>
+</body>
+</html>
