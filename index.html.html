@@ -184,26 +184,62 @@ function evalTx(t,ap,b){if(t.kind==="ofacd")return["Block","bad","Direct SDN mat
  if(t.kind==="ofaci"){const ok=t.hops<=[3,2,1][ap];return[ok?"Alert":"Logged",ok?"warn":"neu",`Hop rule: ${t.hops} hops, limit ${[3,2,1][ap]}`,"n/a"]}
  if(t.kind==="count"){const ok=t.n>=t.lim[ap];return[ok?"Alert":"Logged",ok?"warn":"neu",`Pattern rule: ${t.n}${t.cat==="Velocity"?"x":""} vs. ${t.lim[ap]}${t.cat==="Velocity"?"x":""}`,"n/a"]}
  const s=Math.round(100*t.w*Math.pow(.6,t.hops-1)*t.share);const ok=s>=CUT[ap];return[ok?"Alert":"Logged",ok?"warn":"neu",`${t.hops} hop${t.hops>1?"s":""}, ${Math.round(t.share*100)}% of value`,String(s)]}
+function sev(t){if(t.kind==="ofacd")return["Critical","bad"];if(t.kind==="ofaci")return["High","warn"];if(t.kind==="count")return t.cat==="Velocity"?["Low","neu"]:["Medium","neu"];
+ const s=Math.round(100*t.w*Math.pow(.6,t.hops-1)*t.share);return s>=30?["High","warn"]:s>=15?["Medium","neu"]:["Low","neu"]}
 function vQueue(){const b=bank(),ap=state.ap[b.id];const struct=b.jur==="CA"?"6 inbound transfers of CAD 950 equivalent in 5 days":"6 inbound transfers of 2,900 USDC in 5 days";
- return `<div class="card"><h2>Alert queue: ${b.name} at ${AP[ap]}</h2><p class="note">Score = 100 × category weight × 0.6 per extra hop × share of value. This appetite alerts at a score of ${CUT[ap]} or more. Switch the appetite and the same transactions move between Alert and Logged.</p>
- <div class="tw"><table><thead><tr><th>ID</th><th>Activity</th><th>Category</th><th>Basis</th><th class="n">Score</th><th>Action</th></tr></thead><tbody>${TX.map(t=>{const[a,k,basis,s]=evalTx(t,ap,b);return `<tr><td class="mono">${t.id}</td><td>${t.id==="A-1049"?struct:t.what}</td><td>${t.cat}</td><td>${basis}</td><td class="n">${s}</td><td><span class="chip ${k}">${a}</span>${a==="Block"?' <span class="chip bad">Freeze candidate</span>':""}</td></tr>`}).join("")}</tbody></table></div>
+ return `<div class="card"><h2>Alert queue: ${b.name} at ${AP[ap]}</h2><p class="note">Score = 100 × category weight × 0.6 per extra hop × share of value. This appetite alerts at a score of ${CUT[ap]} or more. Severity shows how serious the risk is. The appetite decides whether it becomes an alert. Switch the appetite and the same transactions move between Alert and Logged.</p>
+ <div class="tw"><table><thead><tr><th>ID</th><th>Activity</th><th>Category</th><th>Basis</th><th class="n">Score</th><th>Severity</th><th>Action</th></tr></thead><tbody>${TX.map(t=>{const[a,k,basis,s]=evalTx(t,ap,b);const sv=sev(t);return `<tr><td class="mono">${t.id}</td><td>${t.id==="A-1049"?struct:t.what}</td><td>${t.cat}</td><td>${basis}</td><td class="n">${s}</td><td><span class="chip ${sv[1]}">${sv[0]}</span></td><td><span class="chip ${k}">${a}</span>${a==="Block"?' <span class="chip bad">Freeze candidate</span>':""}</td></tr>`}).join("")}</tbody></table></div>
  <p class="note">USDC and PYUSD issuers can freeze tokens, so a direct sanctions hit is also flagged as a freeze candidate for the issuer.</p></div>`}
 
-function vCase(){return `<div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))"><div class="card"><h2>Case A-1042 · Harlan Ridge Bank</h2><p class="note">Mixer exposure · score 15 · Conservative appetite. At Balanced or Expansive, this transfer would only be logged.</p>
+function vCase(){return `<div style="display:grid;gap:12px"><div class="card"><h2>Flow of funds: case A-1042</h2><div class="tw"><svg viewBox="0 0 860 262" width="100%" style="max-width:920px;display:block" role="img" aria-label="Funds flow left to right: four untraced wallets feed a mixer pool; the mixer sends 3,100 and 2,710 USDC and Northgate Exchange sends 12,940 USDC to an unnamed intermediary wallet, which sends 18,750 USDC to the Harlan Ridge customer deposit address">
+  <defs>
+   <marker id="mb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 Z" style="fill:var(--bad)"/></marker>
+   <marker id="mo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="3" markerHeight="3" orient="auto"><path d="M0,0 L10,5 L0,10 Z" style="fill:var(--ok)"/></marker>
+   <marker id="ma" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="2.6" markerHeight="2.6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" style="fill:var(--accent)"/></marker>
+  </defs>
+  <g style="font-family:var(--sans);font-size:12px">
+   <text x="335" y="18" text-anchor="middle" style="fill:var(--muted);font-size:11px">Hop 1</text>
+   <text x="613" y="18" text-anchor="middle" style="fill:var(--muted);font-size:11px">Hop 2</text>
+   <text x="10" y="40" style="fill:var(--muted);font-size:10.5px">Into the mixer,</text>
+   <text x="10" y="54" style="fill:var(--muted);font-size:10.5px">not traced</text>
+   <g style="stroke:var(--muted);stroke-width:1.2;stroke-dasharray:3 3;fill:none">
+    <path d="M30,74 C70,74 70,84 108,84"/><path d="M30,96 C70,96 70,90 108,90"/><path d="M30,118 C70,118 70,96 108,96"/><path d="M30,140 C70,140 70,102 108,102"/>
+   </g>
+   <g style="fill:var(--line);stroke:var(--muted);stroke-width:1"><circle cx="24" cy="74" r="5"/><circle cx="24" cy="96" r="5"/><circle cx="24" cy="118" r="5"/><circle cx="24" cy="140" r="5"/></g>
+   <rect x="110" y="56" width="170" height="72" rx="6" style="fill:var(--bad-bg);stroke:var(--bad)"/>
+   <text x="122" y="76" style="fill:var(--bad);font-size:9.5px;letter-spacing:.08em">MIXING</text>
+   <text x="122" y="95" style="fill:var(--fg);font-weight:600">Mixer pool</text>
+   <text x="122" y="115" style="fill:var(--fg);font-family:var(--mono);font-size:11.5px">5,810 USDC · 31%</text>
+   <rect x="110" y="168" width="170" height="72" rx="6" style="fill:var(--ok-bg);stroke:var(--ok)"/>
+   <text x="122" y="188" style="fill:var(--ok);font-size:9.5px;letter-spacing:.08em">EXCHANGE</text>
+   <text x="122" y="207" style="fill:var(--fg);font-weight:600">Northgate Exchange</text>
+   <text x="122" y="227" style="fill:var(--fg);font-family:var(--mono);font-size:11.5px">12,940 USDC · 69%</text>
+   <path d="M280,76 C340,76 350,112 396,112" style="fill:none;stroke:var(--bad);stroke-width:1.9" marker-end="url(#mb)"/>
+   <path d="M280,104 C330,104 350,122 396,122" style="fill:none;stroke:var(--bad);stroke-width:1.7" marker-end="url(#mb)"/>
+   <path d="M280,204 C340,204 350,140 394,140" style="fill:none;stroke:var(--ok);stroke-width:7" marker-end="url(#mo)"/>
+   <text x="292" y="64" style="fill:var(--bad);font-family:var(--mono);font-size:10.5px">Oct 18 · 3,100</text>
+   <text x="284" y="128" style="fill:var(--bad);font-family:var(--mono);font-size:10.5px">Oct 19 · 2,710</text>
+   <text x="300" y="232" style="fill:var(--ok);font-family:var(--mono);font-size:10.5px">Oct 19 · 12,940</text>
+   <rect x="400" y="92" width="170" height="72" rx="6" style="fill:var(--panel);stroke:var(--line)"/>
+   <text x="412" y="112" style="fill:var(--muted);font-size:9.5px;letter-spacing:.08em">UNNAMED ADDRESS</text>
+   <text x="412" y="131" style="fill:var(--fg);font-weight:600">Intermediary wallet</text>
+   <text x="412" y="151" style="fill:var(--muted);font-family:var(--mono);font-size:11px">G7kQ2…xP9vR · 3 days old</text>
+   <line x1="570" y1="128" x2="652" y2="128" style="stroke:var(--accent);stroke-width:8" marker-end="url(#ma)"/>
+   <text x="613" y="112" text-anchor="middle" style="fill:var(--fg);font-family:var(--mono);font-size:10.5px">Oct 21</text>
+   <text x="613" y="152" text-anchor="middle" style="fill:var(--fg);font-family:var(--mono);font-size:10.5px">18,750 USDC</text>
+   <rect x="660" y="92" width="190" height="72" rx="6" style="fill:var(--accent-soft);stroke:var(--accent)"/>
+   <text x="672" y="112" style="fill:var(--accent);font-size:9.5px;letter-spacing:.08em">YOUR CUSTOMER</text>
+   <text x="672" y="131" style="fill:var(--fg);font-weight:600">Harlan Ridge deposit</text>
+   <text x="672" y="151" style="fill:var(--muted);font-family:var(--mono);font-size:11px">9fQwT…m3LcA · C-88213</text>
+   <text x="10" y="256" style="fill:var(--muted);font-size:11px">Line width shows share of value. Addresses are fictional.</text>
+  </g>
+ </svg></div></div><div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))"><div class="card"><h2>Case A-1042 · Harlan Ridge Bank</h2><p class="note">Mixer exposure · score 15 · Conservative appetite. At Balanced or Expansive, this transfer would only be logged.</p>
  <div class="kv"><span>Customer</span><span>Retail, 14 months</span><span>Activity</span><span>18,750 USDC inbound</span><span>Exposure</span><span>2 hops from a mixer</span><span>Traceable share</span><span>31%</span><span>Sanctioned, darknet, theft</span><span>None found</span></div>
- <h3>Trace</h3>
- <div style="display:grid;gap:6px;font-size:13px">
-  <div style="display:flex;flex-wrap:wrap;gap:6px"><span class="chip bad">Mixer pool · 5,810 USDC · 31%</span><span class="chip ok">Northgate Exchange (regulated) · 12,940 USDC · 69%</span></div>
-  <div class="note">↓ hop 1</div>
-  <div><span class="chip neu mono">Intermediary wallet G7kQ2…xP9vR</span> <span class="note">created 3 days before transfer</span></div>
-  <div class="note">↓ hop 2</div>
-  <div><span class="chip neu mono">Harlan Ridge deposit 9fQwT…m3LcA</span> <span class="note">18,750 USDC received</span></div>
- </div>
- <h3>How it was worked</h3><ol class="steps"><li>Confirm what fired and the score.</li><li>Check the customer profile: tenure, occupation, normal activity.</li><li>Trace funds before the mixer. 69% traces to a regulated exchange.</li><li>Check for sanctioned, darknet, or theft exposure. None, so no immediate escalation.</li><li>Request source of funds documentation from the customer.</li><li>Decide and document.</li></ol>
+ <h3>How it was worked</h3><ol class="steps"><li>Confirm what fired and the score.</li><li>Check the customer profile: tenure, occupation, normal activity.</li><li>Trace both sources. 69% came from a regulated exchange. The mixer's inputs can't be traced.</li><li>Check for sanctioned, darknet, or theft exposure. None, so no immediate escalation.</li><li>Request source of funds documentation from the customer.</li><li>Decide and document.</li></ol>
  <p><span class="chip warn">Enhanced due diligence</span> Escalate for a SAR decision if documents aren't received in 10 days or don't fit the profile.</p></div>
  <div class="card"><div class="head"><h2>AI drafted summary</h2><span class="chip warn">Analyst review required</span></div>
  <p>Customer received 18,750 USDC on Solana. 31% of the value passed through a mixer two hops upstream. The remaining 69% traces to a regulated US exchange. No sanctioned, darknet, or stolen fund exposure was found. The amount is above the customer's typical monthly inflow. Recommended next step: request source of funds documentation and hold the case open for 10 days.</p>
- <p class="note">The analyst checks every claim against the trace before saving. The draft speeds up writing. The decision stays with a person.</p></div></div>`}
+ <p class="note">The analyst checks every claim against the trace before saving. The draft speeds up writing. The decision stays with a person.</p></div></div></div>`}
 
 function vIntegration(){return `<div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))"><div class="card"><h2>How alerts reach the bank's tools</h2><ol class="steps"><li>Bank's core system sends deposit and withdrawal addresses for each customer.</li><li>Exposure data is joined to those transfers on a schedule, or in real time for withdrawals.</li><li>Rules apply the bank's appetite and score each transfer.</li><li>Blocks return to the payment system before funds settle.</li><li>Alerts post to the bank's case management queue as JSON.</li><li>Everything lands in the bank's warehouse for reporting and audit.</li></ol>
  <p class="note">Questions for discovery: real time or batch, which case tool, who owns each step, and how long records are kept.</p></div>
