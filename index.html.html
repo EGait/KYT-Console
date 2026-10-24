@@ -261,7 +261,7 @@ function vIntegration(){return `<div class="grid3" style="grid-template-columns:
   "created_at": "2026-10-21T14:32:08Z"
 }</pre></div></div>`}
 
-function vNotebook(){return `<div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))"><div class="card"><h2>SQL: alerts and hours by rule</h2><pre>WITH scored AS (
+function vNotebook(){return `<div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))"><div class="card"><h2>SQL: alerts and findings by category</h2><pre>WITH scored AS (
   SELECT t.tx_id, t.bank_id, e.category, e.hops,
          e.share_of_value,
          ROUND(100 * c.weight
@@ -273,15 +273,13 @@ function vNotebook(){return `<div class="grid3" style="grid-template-columns:rep
 )
 SELECT s.bank_id, s.category,
        COUNT(*) AS alerts,
-       SUM(r.review_min) / 60.0 AS hours,
        SUM(CASE WHEN o.confirmed THEN 1 ELSE 0 END) AS found
 FROM scored s
 JOIN bank_policy p ON p.bank_id = s.bank_id
-JOIN review_minutes r ON r.category = s.category
 LEFT JOIN outcomes o ON o.tx_id = s.tx_id
 WHERE s.score >= p.alert_cutoff
 GROUP BY s.bank_id, s.category
-ORDER BY hours DESC;</pre></div>
+ORDER BY alerts DESC;</pre></div>
  <div class="card"><h2>pandas: compare appetites</h2><pre>import pandas as pd
 
 df = transfers.merge(exposures, on="tx_id") \\
